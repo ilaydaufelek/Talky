@@ -27,7 +27,7 @@ const MainPage=()=>{
     axios.get("/api/users").then((res) => {
       setUsers(res.data);
       if (res.data.length > 0) {
-        startConversation(res.data[0].userId);
+        startConversation([res.data[0].userId]);
       }
     });
   }, []);
@@ -67,15 +67,18 @@ const MainPage=()=>{
  getMessages();
   },[conversationId])
 
-  
-   const startConversation = async (memberId: string) => {
-    try {
-      const response = await axios.post("/api/conversations", { memberId });
-      setConversationId(response.data._id);
-    } catch (error) {
-      console.error("Error starting conversation:", error);
-    }
-  };
+
+  const startConversation = async (memberIds: string[], name?: string) => {
+  try {
+    const response = await axios.post("/api/conversations", {
+      memberIds,
+      name,
+    });
+    setConversationId(response.data._id);
+  } catch (error) {
+    console.error("Error starting conversation:", error);
+  }
+};
 
   const sendMessage = async () => {
     if (!value.trim() || !conversationId) return;

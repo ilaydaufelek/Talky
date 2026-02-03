@@ -15,19 +15,26 @@ export default async function handler(
         if (!profile) {
             return res.status(401).json({ error: "Unauthorized" });
         }
+const { memberIds, name } = req.body;
 
-        const { memberId } = req.body;
+if (!Array.isArray(memberIds)) {
+  return res.status(400).json({ error: "memberIds must be an array" });
+}
 
-        if (!memberId) {
-            return res.status(400).json({ error: "Member ID missing" });
-        }
+const allMembers = Array.from(
+  new Set([profile.userId, ...(memberIds || [])])
+);
 
-        const conversation = await getOrCreateConversation(
-            profile.userId,
-            memberId
-        );
+if (allMembers.length < 2) {
+  return res.status(400).json({ error: "Conversation must have at least 2 members" });
+}
 
-        return res.status(200).json(conversation);
+const conversation = await getOrCreateConversation(
+  allMembers,
+  name
+);
+
+return res.status(200).json(conversation);
     } catch (error) {
         console.error("[CONVERSATIONS_POST]", error);
         return res.status(500).json({ error: "Internal Error" });

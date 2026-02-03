@@ -2,21 +2,34 @@ import mongoose, { Schema, models, model } from "mongoose";
 
 const ConversationSchema = new Schema(
   {
-    memberOneId: {
-      type: String,
+    members: {
+      type: [String], // userId'ler
       required: true,
     },
-    memberTwoId: {
-      type: String,
-      required: true,
+
+    isGroup: {
+      type: Boolean,
+      default: false,
+    },
+
+    name: {
+      type: String, // grup adı
+    },
+
+    createdBy: {
+      type: String, // grup kurucusu
     },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false },
+    timestamps: true,
   }
 );
 
-ConversationSchema.index({ memberOneId: 1, memberTwoId: 1 }, { unique: true });
+// DM'ler için aynı iki kişi tekrar konuşma açamasın
+ConversationSchema.index(
+  { members: 1 },
+  { unique: true, partialFilterExpression: { isGroup: false } }
+);
 
 export const Conversation =
   models.Conversation || model("Conversation", ConversationSchema);

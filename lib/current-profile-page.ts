@@ -19,12 +19,28 @@ export const currentProfilePage = async (req: NextApiRequest) => {
     // Clerk API ile user detaylarını al
     const client = await clerkClient();
     const clerkUser = await client.users.getUser(userId);
+const email = clerkUser.emailAddresses?.[0]?.emailAddress;
 
-    profile = await User.create({
-      userId,
-      email: clerkUser.emailAddresses[0].emailAddress,
-      username: `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim(),
-    });
+if (!email) {
+  throw new Error("User has no email address");
+}
+
+const username =
+  `${clerkUser.firstName ?? ""} ${clerkUser.lastName ?? ""}`.trim()
+  || clerkUser.username
+  || "User";
+
+   try {
+  profile = await User.create({
+    userId,
+    email,
+    username,
+    imageUrl: clerkUser.imageUrl,
+  });
+} catch (err) {
+  console.error("USER CREATE ERROR:", err);
+  throw err;
+}
   }
 
   return profile;
