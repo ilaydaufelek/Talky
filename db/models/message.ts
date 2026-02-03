@@ -26,7 +26,16 @@ const MessageSchema = new Schema(
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
+
+MessageSchema.virtual("sender", {
+  ref: "User",
+  localField: "senderId",
+  foreignField: "_id",
+  justOne: true,
+});
 
 export const Message = models.Message || model("Message", MessageSchema);

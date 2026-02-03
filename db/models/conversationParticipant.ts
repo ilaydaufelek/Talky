@@ -22,7 +22,7 @@ const ConversationParticipantSchema = new Schema(
   }
 );
 
-// Prisma'daki @@unique([userId, conversationId])
+
 ConversationParticipantSchema.index(
   { userId: 1, conversationId: 1 },
   { unique: true }
