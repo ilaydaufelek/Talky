@@ -2,11 +2,11 @@ import mongoose, { Schema, models, model } from "mongoose";
 
 const UserSchema = new Schema(
   {
-    userId: {
-      type: String,
-      required: true,
-      unique: true,
-    },
+   clerkId: {          // eskiden userId dediğin şey
+    type: String,
+    required: true,
+    unique: true,
+  },
     email: {
       type: String,
       required: true,

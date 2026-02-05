@@ -20,7 +20,7 @@ export default async function handler(
         await connectDB();
 
         const users = await User.find({
-            userId: { $ne: profile.userId }
+            _id: { $ne: profile._id }
         });
 
         return res.status(200).json(users);

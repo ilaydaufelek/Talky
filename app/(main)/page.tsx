@@ -91,7 +91,7 @@ const MainPage = () => {
       .get("/api/get-direct-messages", { params: { conversationId } })
       .then(res => setMessages(res.data));
   }, [conversationId]);
-
+ 
   /* ---------------- START CHAT ---------------- */
   const startConversation = async (memberIds: string[], chatName: string) => {
     const res = await axios.post("/api/conversations", { memberIds });
@@ -217,6 +217,7 @@ const MainPage = () => {
           
          )}
         </div>
+        <UserButton/>
       </ResizablePanel>
     </ResizablePanelGroup>
            

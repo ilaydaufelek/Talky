@@ -1,10 +1,11 @@
-import mongoose, { Schema, models, model } from "mongoose";
+import mongoose, { Schema, models, model, Types } from "mongoose";
 
 const ConversationSchema = new Schema(
   {
     members: {
-      type: [String], // userId'ler
-      required: true,
+    type: [Schema.Types.ObjectId],
+    ref: "User",
+    required: true,
     },
 
     isGroup: {
@@ -12,23 +13,14 @@ const ConversationSchema = new Schema(
       default: false,
     },
 
-    name: {
-      type: String, // grup adı
-    },
+    name: String,
 
     createdBy: {
-      type: String, // grup kurucusu
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   },
-  {
-    timestamps: true,
-  }
-);
-
-// DM'ler için aynı iki kişi tekrar konuşma açamasın
-ConversationSchema.index(
-  { members: 1 },
-  { unique: true, partialFilterExpression: { isGroup: false } }
+  { timestamps: true }
 );
 
 export const Conversation =

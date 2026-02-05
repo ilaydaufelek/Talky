@@ -38,6 +38,8 @@ export default async function handler(
       allMembers,
       name
     );
+    console.log("PROFILE USER ID:", profile.userId);
+console.log("MEMBER IDS:", memberIds);
 
     return res.status(200).json(conversation);
   } catch (error) {
