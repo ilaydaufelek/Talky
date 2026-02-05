@@ -1,6 +1,7 @@
 'use client';
 
-import { useClerk, UserButton } from "@clerk/nextjs";
+export const dynamic = "force-dynamic";
+import {   useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
@@ -117,7 +118,7 @@ const MainPage = () => {
     setValue("");
   };
 
-  const{user}=useClerk()
+  const{user}=useUser()
         return (
       
        <ResizablePanelGroup
@@ -217,7 +218,7 @@ const MainPage = () => {
           
          )}
         </div>
-        <UserButton/>
+        
       </ResizablePanel>
     </ResizablePanelGroup>
            
