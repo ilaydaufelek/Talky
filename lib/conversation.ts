@@ -8,10 +8,9 @@ export const getOrCreateConversation = async (
   await connectDB();
 
   const isGroup = memberIds.length > 2;
-
-  // members sırasını sabitle (unique index için)
-  const sortedMembers = [...memberIds].sort();
-
+  const sortedMembers = [...new Set(memberIds)].sort();
+console.log("MEMBERS:", sortedMembers);
+  // 1️⃣ Önce kesin bul
   let conversation = await Conversation.findOne({
     isGroup,
     members: {
@@ -19,15 +18,39 @@ export const getOrCreateConversation = async (
       $size: sortedMembers.length,
     },
   });
+if (!memberIds.every(id => typeof id === "string" && id.length === 24)) {
+  throw new Error("Conversation members must be Mongo ObjectId strings");
+}
+  if (conversation) return conversation;
 
-  if (!conversation) {
-    conversation = await Conversation.create({
+  // 2️⃣ Yoksa oluşturmaya çalış
+  try {
+    return await Conversation.create({
       members: sortedMembers,
       isGroup,
       name,
-      createdBy: sortedMembers[0], // istersen profile.userId ver
+      createdBy: sortedMembers[0],
     });
-  }
 
-  return conversation;
+    
+  } catch (error: any) {
+    // 3️⃣ Duplicate olduysa TEKRAR BUL (null dönemez artık)
+    if (error.code === 11000) {
+      const existing = await Conversation.findOne({
+        isGroup,
+        members: {
+          $all: sortedMembers,
+          $size: sortedMembers.length,
+        },
+      });
+
+      if (!existing) {
+        throw new Error("Conversation exists but could not be found");
+      }
+
+      return existing;
+    }
+
+    throw error;
+  }
 };
