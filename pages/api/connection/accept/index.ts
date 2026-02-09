@@ -1,40 +1,46 @@
-import { NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongoose";
 import { Connection } from "@/db/models/connection";
 
-
-
-export async function POST(req: Request) {
-  await connectDB();
-
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { connectionId } = await req.json();
+  try {
+    await connectDB();
 
-  const connection = await Connection.findById(connectionId);
+    const { userId } = await auth();
+    if (!userId) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
 
-  if (!connection) {
-    return NextResponse.json({ message: "Request not found" }, { status: 404 });
+    const { connectionId } = req.body;
+    if (!connectionId) {
+      return res.status(400).json({ error: "connectionId is required" });
+    }
+
+    const connection = await Connection.findById(connectionId);
+    if (!connection) {
+      return res.status(404).json({ error: "Request not found" });
+    }
+
+   
+    if (connection.recipient.toString() !== userId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    if (connection.accepted === true) {
+      return res.status(400).json({ error: "Already accepted" });
+    }
+
+    connection.accepted = true;
+    await connection.save();
+
+    return res.status(200).json(connection);
+  } catch (error) {
+    console.error("ACCEPT CONNECTION ERROR:", error);
+    return res.status(500).json({ error: "Internal server error" });
   }
-
-  
-  if (connection.recipient.toString() !== userId) {
-    return NextResponse.json({ message: "Forbidden" }, { status: 403 });
-  }
-
-  if (connection.accepted === true) {
-    return NextResponse.json(
-      { message: "Already accepted" },
-      { status: 400 }
-    );
-  }
-
-  connection.accepted = true;
-  await connection.save();
-
-  return NextResponse.json(connection);
 }
