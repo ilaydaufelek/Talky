@@ -2,7 +2,7 @@ import mongoose, { Schema, models, model } from "mongoose";
 
 const UserSchema = new Schema(
   {
-   clerkId: {          // eskiden userId dediğin şey
+   clerkId: {         
     type: String,
     required: true,
     unique: true,
@@ -17,6 +17,10 @@ const UserSchema = new Schema(
       required: true,
       unique: true,
     },
+    inviteOpen:{
+      type:Boolean,
+      default:true
+    }
   },
   {
     timestamps: { createdAt: true, updatedAt: false },
