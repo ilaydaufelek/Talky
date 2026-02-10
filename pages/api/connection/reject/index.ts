@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { auth } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/mongoose";
 import { Connection } from "@/db/models/connection";
+import { currentProfilePage } from "@/lib/current-profile-page";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,7 +14,7 @@ export default async function handler(
 
   await connectDB();
 
-  const { userId } = await auth();
+ const { userId } = await currentProfilePage(req);
   if (!userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }

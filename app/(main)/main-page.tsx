@@ -11,6 +11,8 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/componen
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Ban, Check } from "lucide-react";
 
 /* ---------------- TYPES ---------------- */
 type Message = {
@@ -25,7 +27,13 @@ type User = {
   username: string;
 };
 
-
+type GetRequest={
+  _id: string;
+  requester: {
+    _id: string;
+    username: string;
+  };
+}
 
 const MainPage = () => {
   const router = useRouter();
@@ -35,11 +43,11 @@ const MainPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [value, setValue] = useState("");
   const [socket, setSocket] = useState<Socket | null>(null);
-    
+      const[selected2,setSelected2]=useState<"request" | "add">('request')
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [activeChatName, setActiveChatName] = useState<string>("");
-
+    const[getRequest,setGetRequest]=useState<GetRequest[]>([])
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
   /* ---------------- CURRENT USER ID ---------------- */
@@ -105,6 +113,9 @@ const MainPage = () => {
     router.push(`/?conversationId=${id}`);
   };
 
+  const sendFriendsRequest=async(username:string)=>{
+ await axios.post("/api/connection",{username})
+  }
   /* ---------------- SEND MESSAGE ---------------- */
   const sendMessage = async () => {
     if (!value.trim() || !conversationId) return;
@@ -118,6 +129,17 @@ const MainPage = () => {
     setValue("");
   };
 
+  const deleteRequest=async(connectionId:string)=>{
+    await axios.post("/api/connection/reject",{connectionId})
+    setGetRequest(prev=>prev.filter((r)=>r._id !==connectionId))
+  }
+
+  useEffect(()=>{
+     axios.get("/api/connection/incoming").then((res)=>{
+       console.log("INCOMING:", res.data);
+   setGetRequest(res.data.incoming)
+  })
+  },[])
   const{user}=useUser()
         return (
       
@@ -152,32 +174,61 @@ const MainPage = () => {
     }`}
      onClick={()=>setSelected("groups")}  variant="ghost">Groups</Button>
      </ButtonGroup>
-          <Button size="icon" variant="outline" className="bg-transparent rounded-full cursor-pointer " >+</Button>
+         <Dialog>
+          <DialogTrigger asChild >
+             <Button size="icon" variant="outline" className="bg-transparent rounded-full cursor-pointer " >+</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader className="space-x-3" >
+              <Button className={`relative cursor-pointer  ${
+      selected2 === "request"
+        ? "border-b-2 border-black dark:border-white"
+        : "border-b-2 border-transparent"
+    }`} onClick={()=>setSelected2("request")}  variant="ghost">Friend request</Button>
+        <Button 
+        className={`relative cursor-pointer  ${
+      selected2 === "add"
+        ? "border-b-2 border-black dark:border-white"
+        : "border-b-2 border-transparent"
+    }`}onClick={()=>setSelected2("add")}  variant="ghost">Add Friends</Button>
+    <DialogTitle></DialogTitle>
+            </DialogHeader>
+           {selected2==="add" &&(
+            users.map((u)=>(
+             <div key={u._id}  className="hover:bg-zinc-700/20 p-2 rounded-md flex justify-between " >
+               <div className=" " >
+                {u.username}
+              </div>
+              <button onClick={()=>sendFriendsRequest(u.username)} className="text-xs font-semibold text-black hover:text-green-600 dark:text-white dark:hover:text-green-600 cursor-pointer " >Add friends</button>
+             </div>
+            ))
+           )}
+           {selected2==="request" &&(
+            getRequest.map((u)=>(
+              <div className="flex items-center justify-between" key={u._id} >
+              <div>{u.requester.username}</div>
+              <div className=" flex space-x-2" >
+                <Check className="w-5 h-5 cursor-pointer text-green-600 " />
+                <Ban onClick={()=>deleteRequest(u._id)} className="w-5 h-5 cursor-pointer text-red-600  " />
+              </div>
+              </div>
+            ))
+           )}
+          </DialogContent>
+         </Dialog>
     </div>
-       {selected==="contacts" &&(
-        <div  className="p-4 space-y-2 " >
-          {users?.map((u)=>(
-            <div onClick={() =>
-      startConversation(
-        [currentUserId!, u._id],
-        u.username
-      )
-    } className="font-semibold hover:bg-zinc-200 dark:hover:bg-zinc-700/30 p-1 hover:rounded-md cursor-pointer " key={u._id} >{u.username}</div>
-          )
-            
-          )}
-        </div>
-       )}
+      
+      
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel className="relative" defaultSize="75%">
-        <div className="flex  flex-1 h-full flex-col p-2 ">
+        <div className="flex  flex-1 h-full flex-col ">
          {!conversationId &&(
-          <div className="absolute top-0  h-screen w-screen rotate-180 transform bg-white bg-[radial-gradient(60%_120%_at_50%_50%,hsla(0,0%,100%,0)_0,rgba(252,205,238,.5)_100%)]"></div>
+          <div className="absolute top-0  h-screen w-screen rotate-180 transform bg-white dark:bg-black "></div>
          )}
          {conversationId &&(
-         <>
+         <div className=" flex  flex-1 h-full flex-col p-2" >
           <div className="h-12 border-b  border-zinc-700/20 dark:border-zinc-200/25 font-semibold flex items-center  " >
            <span className="ml-2" > {activeChatName}</span>
           </div>
@@ -214,7 +265,7 @@ const MainPage = () => {
                 
               />
         
-         </>
+         </div>
           
          )}
         </div>

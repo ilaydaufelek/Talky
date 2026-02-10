@@ -21,7 +21,7 @@ export const getOrCreateConversation = async (
   conversation = await Conversation.create({
     members: sortedMembers,
     isGroup,
-    name: isGroup ? name : undefined,
+    name: isGroup ? name : "",
     createdBy: sortedMembers[0],
   });
 

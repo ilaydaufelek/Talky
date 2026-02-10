@@ -11,12 +11,11 @@ export const currentProfilePage = async (req: NextApiRequest) => {
 
   await connectDB();
 
-  // 1️⃣ Mongo’da var mı?
+  
   let user = await User.findOne({ clerkId });
 
   if (user) return user;
 
-  // 2️⃣ Yoksa Clerk’ten al → Mongo’ya koy
   const clerk = await clerkClient();
   const clerkUser = await clerk.users.getUser(clerkId);
 
