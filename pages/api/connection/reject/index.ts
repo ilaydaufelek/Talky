@@ -14,10 +14,12 @@ export default async function handler(
 
   await connectDB();
 
- const { userId } = await currentProfilePage(req);
-  if (!userId) {
+  const user = await currentProfilePage(req);
+  if (!user) {
     return res.status(401).json({ message: "Unauthorized" });
   }
+
+  const userId = user._id.toString();
 
   const { connectionId } = req.body;
 
@@ -31,7 +33,7 @@ export default async function handler(
     return res.status(404).json({ message: "Request not found" });
   }
 
-  
+
   if (connection.recipient.toString() !== userId) {
     return res.status(403).json({ message: "Forbidden" });
   }

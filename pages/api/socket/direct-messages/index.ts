@@ -35,16 +35,13 @@ export default async function handler(
       return res.status(400).json({ error: "Content missing" });
     }
 
-    const currentUser = await User.findOne({ userId: user.userId });
-    if (!currentUser) {
-      return res.status(404).json({ error: "User not found" });
-    }
+
 
     const message = await Message.create({
       content,
       fileType,
       fileUrl,
-      senderId: currentUser._id,
+      senderId: user._id,
       conversationId,
     });
 

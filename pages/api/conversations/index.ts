@@ -22,7 +22,7 @@ export default async function handler(
     }
 
     const allMembers = Array.from(
-      new Set([profile.userId, ...memberIds])
+      new Set([profile._id, ...memberIds])
     );
     if (allMembers.length < 2) {
       return res.status(400).json({
@@ -30,7 +30,7 @@ export default async function handler(
       });
     }
 
-    if (memberIds.includes(profile.userId)) {
+    if (memberIds.includes(profile._id)) {
       return res.status(400).json({ error: "Cannot start conversation with yourself" });
     }
 
@@ -38,8 +38,8 @@ export default async function handler(
       allMembers,
       name
     );
-    console.log("PROFILE USER ID:", profile.userId);
-console.log("MEMBER IDS:", memberIds);
+    console.log("PROFILE USER ID:", profile._id);
+    console.log("MEMBER IDS:", memberIds);
 
     return res.status(200).json(conversation);
   } catch (error) {
